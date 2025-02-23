@@ -18,19 +18,22 @@
 # Example Output:
 # "I understand you’re exploring a new idea for an app. Could you please explain what main problem this app addresses? For example, is it intended to streamline a process, solve a specific user pain point, or something else? Also, can you list the core features you envision? If you have any sketches or examples, feel free to share!" """
 # )
+import os 
 import autogen
 from config.settings import config
-import openai
+from openai import OpenAI
 
+client = OpenAI(
+    api_key = os.getenv("OPENAI_API_KEY"),
+)
 # Determine if the model supports system messages.
 supports_system_message = config.OPENAI_MODEL not in ["o1-mini"]
 
 llm_config = {
-    "api_key": config.OPENAI_API_KEY,
+    "api_key": config.OPENAI_API_KEY,  # Retained for autogen config
     "model": config.OPENAI_MODEL
 }
 
-# Use your elaborate system prompt if supported.
 if supports_system_message:
     llm_config["system_message"] = """You are a friendly and inquisitive Chatbot Agent responsible for understanding the user’s software idea. Your job is to interact with the user and gather all essential details about their idea.
 
@@ -42,24 +45,23 @@ Instructions:
 
 Example Output:
 "I understand you’re exploring a new idea for an app. Could you please explain what main problem this app addresses? For example, is it intended to streamline a process, solve a specific user pain point, or something else? Also, can you list the core features you envision? If you have any sketches or examples, feel free to share!" """
-
+    
 chatbot = autogen.AssistantAgent("Chatbot", llm_config=llm_config)
 
 if not supports_system_message:
-    # Clear internal system message
+    # Clear the internal system message.
     chatbot._oai_system_message = ""
-    # Patch generate_reply to call OpenAI’s API directly.
+    # Patch generate_reply to call the new OpenAI API interface.
     def patched_generate_reply(messages, sender=None):
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=config.OPENAI_MODEL,
-            messages=messages,
-            api_key=config.OPENAI_API_KEY
+            messages=messages
         )
-        return {"content": response.choices[0].message["content"]}
+        return {"content": response.choices[0].message.content.strip()}
     chatbot.generate_reply = patched_generate_reply
 
 def generate_chatbot_response(user_input):
-    """Generates a chatbot response. For models without system support, instructions are embedded in the prompt."""
+    """Generates a chatbot response. For models without system support, embed instructions in the prompt."""
     if not supports_system_message:
         instructions = (
             "You are a friendly and inquisitive Chatbot Agent responsible for understanding the user’s software idea. "

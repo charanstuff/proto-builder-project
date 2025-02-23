@@ -53,14 +53,18 @@
 #         full_prompt = f"{instructions}\n\nAgent: {agent_name}\nEvent: {log_message}"
 #     else:
 #         full_prompt = f"Agent: {agent_name}\nEvent: {log_message}"
-    
+
 #     response = logger.generate_reply(messages=[{"role": "user", "content": full_prompt}])
 #     return response["content"]
-
-
+import os
+import traceback
 import autogen
 from config.settings import config
-import openai
+from openai import OpenAI
+
+client = OpenAI(
+    api_key = os.getenv("OPENAI_API_KEY"),
+)
 
 supports_system_message = config.OPENAI_MODEL not in ["o1-mini"]
 
@@ -92,18 +96,21 @@ logger = autogen.AssistantAgent("Logger", llm_config=llm_config)
 if not supports_system_message:
     logger._oai_system_message = ""
     def patched_generate_reply(messages, sender=None):
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=config.OPENAI_MODEL,
-            messages=messages,
-            api_key=config.OPENAI_API_KEY
+            messages=messages
         )
-        return {"content": response.choices[0].message["content"]}
+        return {"content": response.choices[0].message.content.strip()}
     logger.generate_reply = patched_generate_reply
 
 def generate_log_entry(agent_name, log_message):
-    """Generates a log entry for the specified event."""
-    if not supports_system_message:
-        instructions = """You are a Logger Agent responsible for capturing and reporting all interactions between agents in a clear, concise, and human-readable manner.
+    """Generates a log entry for the specified event.
+    
+    If an error occurs during log generation, a detailed error message with stack trace is returned.
+    """
+    try:
+        if not supports_system_message:
+            instructions = """You are a Logger Agent responsible for capturing and reporting all interactions between agents in a clear, concise, and human-readable manner.
 
 Instructions:
 - Log every interaction and reasoning step from each agent.
@@ -120,9 +127,13 @@ Example Output:
 [12:03] Developer: Started coding the authentication module with detailed comments.
 
 Now, generate a log entry for the following event:"""
-        full_prompt = f"{instructions}\n\nAgent: {agent_name}\nEvent: {log_message}"
-    else:
-        full_prompt = f"Agent: {agent_name}\nEvent: {log_message}"
-
-    response = logger.generate_reply(messages=[{"role": "user", "content": full_prompt}])
-    return response["content"]
+            full_prompt = f"{instructions}\n\nAgent: {agent_name}\nEvent: {log_message}"
+        else:
+            full_prompt = f"Agent: {agent_name}\nEvent: {log_message}"
+    
+        response = logger.generate_reply(messages=[{"role": "user", "content": full_prompt}])
+        return response["content"]
+    except Exception as e:
+        stack_trace = traceback.format_exc()
+        print(stack_trace)
+        return f"Error: {str(e)}\nStack Trace:\n{stack_trace}"
