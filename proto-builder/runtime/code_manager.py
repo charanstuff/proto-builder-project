@@ -12,7 +12,8 @@ def get_code(source, destination):
     Copies or clones the code from a source to the destination directory.
     
     Parameters:
-      source: A git repository URL (if it starts with http://, https://, or ends with .git) or a local directory path.
+      source: A git repository URL (if it starts with http://, https://, or ends with .git) 
+              or a local directory path.
       destination: The local directory where the code should be placed.
     """
     if source.startswith("http://") or source.startswith("https://") or source.endswith(".git"):

@@ -1,8 +1,7 @@
-# docker_manager.py
-
 import docker
 import logging
 import os
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -10,10 +9,31 @@ class DockerManager:
     def __init__(self):
         self.client = docker.from_env()
 
+    def build_image(self, path, tag):
+        logger.info(f"Building Docker image with tag: {tag} from path: {path}")
+        try:
+            image, build_logs = self.client.images.build(
+                path=path,
+                tag=tag,
+                dockerfile="Dockerfile",
+                rm=True
+            )
+            # Stream build logs for image building
+            for chunk in build_logs:
+                if 'stream' in chunk:
+                    for line in chunk['stream'].splitlines():
+                        sys.stdout.write(line + "\n")
+                        sys.stdout.flush()
+                        logger.info(line)
+            logger.info(f"Image {tag} built successfully.")
+            return image
+        except Exception as e:
+            logger.error(f"Error building image: {e}")
+            raise
+
     def pull_image(self, image):
         logger.info(f"Checking for Docker image: {image}")
         try:
-            # Try to get the image locally
             self.client.images.get(image)
             logger.info(f"Image {image} found locally. Skipping pull.")
         except docker.errors.ImageNotFound:
@@ -22,20 +42,11 @@ class DockerManager:
                 self.client.images.pull(image)
                 logger.info(f"Image {image} pulled successfully.")
             except Exception as e:
-                logger.error(f"Error pulling image {image}: {str(e)}")
+                logger.error(f"Error pulling image {image}: {e}")
                 raise
 
-    def run_container(self, image, command, volumes=None, ports=None, workdir="/code", detach=False):
-        """
-        Runs a Docker container.
-        
-        Parameters:
-          image: Docker image to use.
-          command: Command to run inside the container.
-          volumes: A dict mapping host directories to container directories.
-          workdir: The working directory inside the container.
-          detach: Whether to run in detached mode (default is False for our run-and-capture pattern).
-        """
+    def run_container(self, image, command, volumes=None, ports=None, workdir="/code", detach=False, labels=None):
+        logger.info(f"Running container with image {image} and command: {command}")
         if isinstance(command, str):
             command = ["sh", "-c", command]
             logger.debug(f"Wrapped command for shell execution: {command}")
@@ -44,34 +55,35 @@ class DockerManager:
                 image,
                 command=command,
                 volumes=volumes,
-                ports=ports,         # Pass the port mapping here
+                ports=ports,
                 working_dir=workdir,
                 detach=True,
-                tty=True  # Allocate a pseudo-TTY
+                tty=False,
+                labels=labels
             )
             logger.info(f"Container {container.id} started.")
             return container
         except Exception as e:
-            logger.error(f"Error running container: {str(e)}")
+            logger.error(f"Error running container: {e}")
             raise
 
     def wait_for_container(self, container):
         logger.info(f"Waiting for container {container.id} to finish.")
         try:
-            exit_status = container.wait()  # Returns a dict like {"StatusCode": 0}
+            exit_status = container.wait()  # Returns dict, e.g. {"StatusCode": 0}
             logger.info(f"Container {container.id} finished with status: {exit_status}")
             return exit_status
         except Exception as e:
-            logger.error(f"Error waiting for container: {str(e)}")
+            logger.error(f"Error waiting for container: {e}")
             raise
 
     def get_container_logs(self, container):
         logger.info(f"Fetching logs for container {container.id}")
         try:
-            logs = container.logs(stream=False).decode("utf-8")
+            logs = container.logs(stream=False).decode("utf-8", errors="replace")
             return logs
         except Exception as e:
-            logger.error(f"Error getting logs: {str(e)}")
+            logger.error(f"Error getting logs: {e}")
             raise
 
     def cleanup_container(self, container):
@@ -80,4 +92,4 @@ class DockerManager:
             container.remove(force=True)
             logger.info(f"Container {container.id} removed.")
         except Exception as e:
-            logger.error(f"Error removing container: {str(e)}")
+            logger.error(f"Error removing container: {e}")
