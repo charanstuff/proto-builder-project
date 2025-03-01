@@ -5,3 +5,6 @@ gitpython
 boto3
 fastapi
 uvicorn
+docker
+GitPython
+Flask

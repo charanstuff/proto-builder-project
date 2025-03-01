@@ -12,3 +12,8 @@ email-validator>=1.2.1
 python-multipart>=0.0.5
 httpx>=0.24.0
 starlette>=0.29.1
+autogen 
+langchain 
+openai
+gitpython
+boto3

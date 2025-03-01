@@ -2,7 +2,7 @@ import os
 import autogen
 from agents.chatbot import generate_chatbot_response  # Ensure this function is used
 from agents.planner import planner
-from agents.developer import generate_code
+from agents.developer import simulate_project_creation
 from agents.deployment import deployment
 from agents.logger import generate_log_entry
 from config.settings import config
@@ -37,6 +37,7 @@ def terminal_chat():
         # Generate tasks
         print("🛠️ Proto Agent: Breaking down tasks...")
         response = planner.generate_reply(messages=[{"role": "user", "content": idea}])
+        print(response)
 
         if "content" in response:
             tasks = response["content"]
@@ -44,14 +45,11 @@ def terminal_chat():
             print("🛠️ Proto Agent: Error in task breakdown. Please try again.")
             continue
 
-        if not isinstance(tasks, dict):
-            print("🛠️ Proto Agent: Error in task breakdown. Please try again.")
-            continue
+        print(response["content"])
 
-        for task_name, task_desc in tasks.items():
-            print(f"🛠️ Proto Agent: Working on {task_name}...")
-            code = generate_code(task_name, task_desc)
-            generate_log_entry("Developer", f"Generated code for: {task_name}")
+        print(f"🛠️ Proto Agent: Working on the idea...")
+        simulate_project_creation(response["content"])
+        generate_log_entry("Developer", f"Generated code for idea")
 
         print("🛠️ Proto Agent: Running your prototype locally...")
         deployment.deploy()
