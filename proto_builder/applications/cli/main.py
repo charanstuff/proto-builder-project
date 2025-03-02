@@ -7,21 +7,23 @@ def main():
     Main entry point for the CLI application.
     Demonstrates retrieving preprompts using PrepromptsHolder.
     """
-    # # Assuming preprompts are stored in a 'preprompts' directory at the project root
-    # preprompts_path = Path(__file__).parent.parent / "preprompts"
-    
-    # # Initialize the PrepromptsHolder
-    # holder = PrepromptsHolder(preprompts_path)
-    
-    # # Get all preprompts
-    # preprompts = holder.get_preprompts()
-    
-    # # Print the retrieved preprompts
-    # for name, content in preprompts.items():
-    #     print(f"\nPreprompt: {name}")
-    #     print("-" * 40)
-    #     print(content)
     print("test")
+    # Assuming preprompts are stored in a 'preprompts' directory at the project root
+    preprompts_path = Path(__file__).parent.parent.parent / "preprompts"
+    
+    print(preprompts_path)
+    # Initialize the PrepromptsHolder
+    holder = PrepromptsHolder(preprompts_path)
+    
+    # Get all preprompts
+    preprompts = holder.get_preprompts()
+    
+    # Print the retrieved preprompts
+    for name, content in preprompts.items():
+        print(f"\nPreprompt: {name}")
+        print("-" * 40)
+        print(content)
+    print("test2")
 
 
 if __name__ == "__main__":

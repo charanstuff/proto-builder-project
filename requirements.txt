@@ -1,5 +1,2 @@
-autogen 
 langchain 
 openai
-gitpython
-boto3
