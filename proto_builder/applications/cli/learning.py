@@ -39,8 +39,8 @@ from typing import Optional, Tuple
 from dataclasses_json import dataclass_json
 from termcolor import colored
 
-from gpt_engineer.core.default.disk_memory import DiskMemory
-from gpt_engineer.core.prompt import Prompt
+from proto_builder.core.default.disk_memory import DiskMemory
+from proto_builder.core.prompt import Prompt
 
 
 @dataclass_json
@@ -287,7 +287,7 @@ def get_session() -> str:
     str
         A unique identifier for the user session.
     """
-    path = Path(tempfile.gettempdir()) / "gpt_engineer_user_id.txt"
+    path = Path(tempfile.gettempdir()) / "proto_builder_user_id.txt"
 
     try:
         if path.exists():

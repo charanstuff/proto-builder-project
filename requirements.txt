@@ -1,2 +1,15 @@
 langchain 
 openai
+backoff
+pyperclip
+langchain-anthropic
+langchain-openai
+toml
+dataclasses_json
+termcolor
+Pillow
+regex  
+tiktoken
+langchain-community
+black
+regex

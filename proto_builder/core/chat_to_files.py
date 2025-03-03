@@ -28,8 +28,8 @@ from typing import Dict, Tuple
 
 from regex import regex
 
-from gpt_engineer.core.diff import ADD, REMOVE, RETAIN, Diff, Hunk
-from gpt_engineer.core.files_dict import FilesDict, file_to_lines_dict
+from proto_builder.core.diff import ADD, REMOVE, RETAIN, Diff, Hunk
+from proto_builder.core.files_dict import FilesDict, file_to_lines_dict
 
 # Initialize a logger for this module
 logger = logging.getLogger(__name__)

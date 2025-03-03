@@ -26,10 +26,10 @@ from typing import Any, Dict, Generator, List, Union
 
 import toml
 
-from gpt_engineer.core.default.disk_memory import DiskMemory
-from gpt_engineer.core.default.paths import metadata_path
-from gpt_engineer.core.files_dict import FilesDict
-from gpt_engineer.core.git import filter_by_gitignore, is_git_repo
+from proto_builder.core.default.disk_memory import DiskMemory
+from proto_builder.core.default.paths import metadata_path
+from proto_builder.core.files_dict import FilesDict
+from proto_builder.core.git import filter_by_gitignore, is_git_repo
 
 
 class FileSelector:
