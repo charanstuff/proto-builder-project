@@ -1,4 +1,5 @@
 import tempfile
+import logging
 
 from pathlib import Path
 from typing import Union
@@ -30,13 +31,18 @@ class FileStore:
 
     def __init__(self, path: Union[str, Path, None] = None):
         if path is None:
+            print("==== Creating temp directory as path is None")
             path = Path(tempfile.mkdtemp(prefix="proto-builder-"))
 
-        self.working_dir = Path(path)
+        path = Path(path)
+        temp_dir = Path(tempfile.mkdtemp(prefix="proto-builder-", dir=path))
+        print("==== Using working directory:", temp_dir)
+        self.working_dir = temp_dir
         self.working_dir.mkdir(parents=True, exist_ok=True)
         self.id = self.working_dir.name.split("-")[-1]
 
     def push(self, files: FilesDict):
+        logging.info(f"==== Pushing files to: {self.working_dir}")
         for name, content in files.items():
             path = self.working_dir / name
             path.parent.mkdir(parents=True, exist_ok=True)

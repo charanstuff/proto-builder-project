@@ -72,6 +72,7 @@ class DiskExecutionEnv(BaseExecutionEnv):
     def run(self, command: str, timeout: Optional[int] = None) -> Tuple[str, str, int]:
         start = time.time()
         print("\n--- Start of run ---")
+        print("[Working directory:", self.files.working_dir, "]")
         # while running, also print the stdout and stderr
         p = subprocess.Popen(
             command,

@@ -132,8 +132,11 @@ def main():
     Demonstrates retrieving preprompts using PrepromptsHolder.
     """
     logging.info("Running proto builder...")
-    prompt_file = Path(__file__).parent.parent / "prompt.txt"
-    project_path = "."
+    # TODO: hacky way to get the project path
+    # project_path = Path(__file__).parent.parent.parent
+    project_path = "/tmp/" 
+    print("project_path:", project_path)
+    prompt_file = str(Path(project_path) / "prompt.txt")
     path = Path(project_path)
     prompt = load_prompt(
         DiskMemory(path),
@@ -142,15 +145,14 @@ def main():
         "",
         "",
     )
-    # TODO: hacky way to get the project path
-    project_path = Path(__file__).parent.parent.parent
+
     use_custom_preprompts = False
     preprompts_holder = PrepromptsHolder(
         get_preprompts_path(use_custom_preprompts, Path(project_path))
     )
     memory = DiskMemory(memory_path(project_path))
     memory.archive_logs()
-    execution_env = DiskExecutionEnv()
+    execution_env = DiskExecutionEnv(path=project_path)
     ai = AI(
         model_name="gpt-4o-mini",
         temperature=0.1
@@ -167,8 +169,6 @@ def main():
     files = FileStore(project_path)
     print("Generating files...")
     files_dict = agent.init(prompt)
-    logging.info(f"Generated files:")
-    print(files_dict.to_log())
     print("DONE DONE")
 
 

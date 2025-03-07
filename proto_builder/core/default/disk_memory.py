@@ -58,7 +58,6 @@ class DiskMemory(BaseMemory):
 
         """
         self.path: Path = Path(path).absolute()
-
         self.path.mkdir(parents=True, exist_ok=True)
 
     def __contains__(self, key: str) -> bool:
@@ -297,6 +296,7 @@ class DiskMemory(BaseMemory):
             The content to be appended to the file.
 
         """
+        print("==== Logging to:\n", key)
 
         if str(key).startswith("../"):
             raise ValueError(f"File name {key} attempted to access parent path.")
@@ -304,6 +304,7 @@ class DiskMemory(BaseMemory):
         if not isinstance(val, str):
             raise TypeError("val must be str")
 
+        print("==== Logging to:\n", self.path)
         full_path = self.path / "logs" / key
         full_path.parent.mkdir(parents=True, exist_ok=True)
 
