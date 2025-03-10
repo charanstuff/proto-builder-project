@@ -1,5 +1,6 @@
 import os
 import logging
+import argparse
 from pathlib import Path
 from termcolor import colored
 
@@ -7,6 +8,7 @@ from proto_builder.core.preprompts_holder import PrepromptsHolder
 from proto_builder.applications.cli.cli_agent import CliAgent
 from proto_builder.core.default.disk_memory import DiskMemory
 from proto_builder.core.default.disk_execution_env import DiskExecutionEnv
+from runtime.docker_execution_env import DockerExecutionEnv
 from proto_builder.core.default.paths import PREPROMPTS_PATH, memory_path
 from proto_builder.core.ai import AI
 from proto_builder.core.prompt import Prompt
@@ -16,6 +18,8 @@ from proto_builder.core.default.steps import (
     improve_fn,
 )
 from proto_builder.core.default.file_store import FileStore
+from runtime.config import DOCKER_IMAGES, DEFAULT_IMAGE_KEY
+from runtime.docker_manager import DockerManager
 
 def get_preprompts_path(use_custom_preprompts: bool, input_path: Path) -> Path:
     """
@@ -134,7 +138,7 @@ def main():
     logging.info("Running proto builder...")
     # TODO: hacky way to get the project path
     # project_path = Path(__file__).parent.parent.parent
-    project_path = "/tmp/" 
+    project_path = "/tmp/mar8" 
     print("project_path:", project_path)
     prompt_file = str(Path(project_path) / "prompt.txt")
     path = Path(project_path)
@@ -152,12 +156,24 @@ def main():
     )
     memory = DiskMemory(memory_path(project_path))
     memory.archive_logs()
-    execution_env = DiskExecutionEnv(path=project_path)
+     # Get the appropriate Docker image based on language
+    image = DOCKER_IMAGES.get("reactpython", DOCKER_IMAGES[DEFAULT_IMAGE_KEY])
+    
+    # Initialize Docker manager
+    docker_manager = DockerManager()
+    
+    # Initialize the Docker execution environment
+    execution_env = DockerExecutionEnv(
+        image=image,
+        docker_manager=docker_manager,
+        path=project_path
+    )
+
     ai = AI(
         model_name="gpt-4o-mini",
         temperature=0.1
     )
-    agent = CliAgent.with_default_config(
+    agent = CliAgent(
         memory,
         execution_env,
         ai=ai,
@@ -166,7 +182,6 @@ def main():
         process_code_fn=execute_entrypoint,
         preprompts_holder=preprompts_holder,
     )
-    files = FileStore(project_path)
     print("Generating files...")
     files_dict = agent.init(prompt)
     print("DONE DONE")

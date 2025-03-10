@@ -34,10 +34,10 @@ class FileStore:
             print("==== Creating temp directory as path is None")
             path = Path(tempfile.mkdtemp(prefix="proto-builder-"))
 
-        path = Path(path)
-        temp_dir = Path(tempfile.mkdtemp(prefix="proto-builder-", dir=path))
-        print("==== Using working directory:", temp_dir)
-        self.working_dir = temp_dir
+        # path = Path(path)
+        # temp_dir = Path(tempfile.mkdtemp(prefix="proto-builder-", dir=path))
+        # print("==== Using working directory:", temp_dir)
+        self.working_dir = Path(path)
         self.working_dir.mkdir(parents=True, exist_ok=True)
         self.id = self.working_dir.name.split("-")[-1]
 

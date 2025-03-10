@@ -234,14 +234,13 @@ def execute_entrypoint(
         )
 
     command = files_dict[ENTRYPOINT_FILE]
-
+    print("command:", command)
     print()
     print(
             "Do you want to execute this code? (Y/n)",
     )
     print()
-    print(command)
-    print()
+
     if input("").lower() not in ["", "y", "yes"]:
         print("Ok, not executing the code.")
         return files_dict

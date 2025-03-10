@@ -13,3 +13,6 @@ tiktoken
 langchain-community
 black
 regex
+GitPython
+docker
+futures
