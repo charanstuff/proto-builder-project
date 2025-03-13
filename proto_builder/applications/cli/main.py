@@ -19,8 +19,8 @@ from proto_builder.core.default.steps import (
 )
 from proto_builder.core.default.file_store import FileStore
 from runtime.config import DOCKER_IMAGES, DEFAULT_IMAGE_KEY
-from runtime.docker_manager import DockerManager
-
+#from runtime.docker_manager import DockerManager
+from runtime.docker_manager_new import DockerManager
 def get_preprompts_path(use_custom_preprompts: bool, input_path: Path) -> Path:
     """
     Get the path to the preprompts, using custom ones if specified.
@@ -161,12 +161,16 @@ def main():
     
     # Initialize Docker manager
     docker_manager = DockerManager()
-    
+    container = docker_manager.run_container(image, "mar10-test", command="tail -f /dev/null", volumes=None, ports=None, workdir="/workspace", detach=True, labels=None, tag=None)
+    print("Container:\n")
+    print(container)
+
     # Initialize the Docker execution environment
     execution_env = DockerExecutionEnv(
-        image=image,
+        container=container,
         docker_manager=docker_manager,
-        path=project_path
+        path=project_path,
+        workdir="/workspace"
     )
 
     ai = AI(
