@@ -12,7 +12,7 @@ import subprocess
 
 from proto_builder.core.base_execution_env import BaseExecutionEnv
 from proto_builder.core.files_dict import FilesDict  # Adjust or stub as needed
-from runtime.docker_manager import DockerManager
+from runtime.backup_docker_manager import DockerManager
 from runtime.logger_config import setup_logger
 from runtime.config import LOGS_DIR
 from proto_builder.core.default.file_store import FileStore
@@ -50,85 +50,14 @@ class DockerExecutionEnv(BaseExecutionEnv):
         runs the container, streams logs, and returns stdout, stderr, and exit code.
         """
         logger.info("Starting DockerExecutionEnv run method.")
-        # # Get and prepare Docker image
-        # image = self.docker_manager.get_image()
-        # # Setup container configuration
-        # container_config = self._get_container_config(command)
-        # logger.info("command:", str(container_config["command"]))
-        # container = self.docker_manager.run_container(image=container_config["image"], command=container_config["command"], volumes=container_config["volumes"], ports=container_config["ports"], workdir=container_config["workdir"], labels=container_config["labels"])
-        # return self._handle_container_output(container)
         command_list = []
         command_list.append(command)
-        return self.docker_manager.execute(self.container, command_list, run_dir=self.workdir, timeout=timeout)
-        
-
-    def _get_container_config(self, command: str) -> dict:
-        """Prepares container configuration including volumes, ports, and labels."""
-        volumes = {
-            os.path.abspath(self.files.working_dir): {
-                'bind': self.workdir,
-                'mode': 'rw'
-            }
-        }
-        logger.debug("Volume mapping: %s", volumes)
-        
-        return {
-            'image': self.image,
-            'command': command,
-            'volumes': volumes,
-            'ports': {"5000/tcp": 5000},
-            'workdir': self.workdir,
-            'labels': {"runtime_project": "proto-builder"}
-        }
-
-    def _handle_container_output(self, container) -> Tuple[str, str, int]:
-        """Handles container output streaming, logging and cleanup."""
-        stdout_accum = []
-        try:
-            # Stream logs and accumulate stdout
-            log_thread = threading.Thread(
-                target=self._stream_container_logs,
-                args=(container, stdout_accum)
-            )
-            log_thread.start()
-            
-            exit_status = self.docker_manager.wait_for_container(container)
-            log_thread.join()
-
-            # Save and process final logs
-            logs_content = self._save_container_logs(container)
-            # todo: cleanup container
-            #self.docker_manager.cleanup_container(container)
-            
-            stdout_combined = "".join(stdout_accum)
-            return (stdout_combined, logs_content, exit_status.get("StatusCode", 1))
-        except Exception as e:
-            logger.error("Error handling container output: %s", e, exc_info=True)
-            try:
-                self.docker_manager.cleanup_container(container)
-            except Exception as cleanup_error:
-                logger.error("Error cleaning up container: %s", cleanup_error, exc_info=True)
-            return ("", str(e), 1)
-
-    def _stream_container_logs(self, container, stdout_accum: list):
-        """Streams and accumulates container logs."""
-        try:
-            for line in container.logs(stream=True):
-                decoded_line = line.decode("utf-8", errors="replace")
-                stdout_accum.append(decoded_line)
-                sys.stdout.write(decoded_line)
-                sys.stdout.flush()
-        except Exception as e:
-            logger.error("Error streaming container logs: %s", e, exc_info=True)
-
-    def _save_container_logs(self, container) -> str:
-        """Saves container logs to file and returns log content."""
-        logs_content = self.docker_manager.get_container_logs(container)
-        log_file_path = os.path.join(LOGS_DIR, "execution.log")
-        logger.debug("Saving final logs to: %s", log_file_path)
-        with open(log_file_path, "w") as f:
-            f.write(logs_content)
-        return logs_content
+        self.docker_manager.execute(self.container, command_list, run_dir=self.workdir, timeout=timeout)
+        status = self.docker_manager.get_execution_status(self.container)
+        logger.info("Execution status: %s", status)
+        stdout = self.docker_manager.get_log(self.container)
+        logger.info("stdout: %s", stdout)
+        return status, stdout, "stderr not implemented"
 
     def popen(self, command: str) -> subprocess.Popen:
         """

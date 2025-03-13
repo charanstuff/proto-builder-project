@@ -20,7 +20,7 @@ from proto_builder.core.default.steps import (
 from proto_builder.core.default.file_store import FileStore
 from runtime.config import DOCKER_IMAGES, DEFAULT_IMAGE_KEY
 #from runtime.docker_manager import DockerManager
-from runtime.docker_manager_new import DockerManager
+from runtime.docker_manager import DockerManager
 def get_preprompts_path(use_custom_preprompts: bool, input_path: Path) -> Path:
     """
     Get the path to the preprompts, using custom ones if specified.
@@ -138,7 +138,7 @@ def main():
     logging.info("Running proto builder...")
     # TODO: hacky way to get the project path
     # project_path = Path(__file__).parent.parent.parent
-    project_path = "/tmp/mar8" 
+    project_path = "/tmp/mar13" 
     print("project_path:", project_path)
     prompt_file = str(Path(project_path) / "prompt.txt")
     path = Path(project_path)
@@ -157,11 +157,11 @@ def main():
     memory = DiskMemory(memory_path(project_path))
     memory.archive_logs()
      # Get the appropriate Docker image based on language
-    image = DOCKER_IMAGES.get("reactpython", DOCKER_IMAGES[DEFAULT_IMAGE_KEY])
+    image = DOCKER_IMAGES.get("node", DOCKER_IMAGES[DEFAULT_IMAGE_KEY])
     
     # Initialize Docker manager
     docker_manager = DockerManager()
-    container = docker_manager.run_container(image, "mar10-test", command="tail -f /dev/null", volumes=None, ports=None, workdir="/workspace", detach=True, labels=None, tag=None)
+    container = docker_manager.run_container(image, "mar10-test", command="tail -f /dev/null", volumes=None, ports={"8080/tcp": 8080}, workdir="/workspace", detach=True, labels=None, tag=None)
     print("Container:\n")
     print(container)
 
