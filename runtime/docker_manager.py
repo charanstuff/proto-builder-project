@@ -99,31 +99,6 @@ class DockerManager:
         except Exception as e:
             raise Exception(f"Error executing command: {e}")
 
-    # def get_execution_status(self, container):
-    #     """
-    #     Get the execution status by checking the process list using 'ps'.
-    #     """
-    #     try:
-    #         exit_code, output = container.exec_run("ps")
-    #         print(f"exit_code: {exit_code}")
-    #         print(f"output: {output}")
-    #         if exit_code == 0:
-    #             process_list = output.decode("utf-8", errors="replace").splitlines()
-    #             # Remove the grep command itself from the process list
-    #             process_list = [proc for proc in process_list if "grep npm run serve" not in proc]
-    #             if process_list:
-    #                 # Check if the server is responsive
-    #                 check_code, _ = container.exec_run("curl -sSf http://localhost:8080")
-    #                 return 0 if check_code == 0 else None
-    #             else:
-    #                 return 1 # process not found
-    #         else:
-    #             logger.error(f"ps command failed: {output}")
-    #             return None
-    #     except Exception as e:
-    #         logger.error(f"Error getting execution status: {e}")
-    #         return None
-
     def execute_local(self, cmd):
         stdout = ""
         stderr = ""

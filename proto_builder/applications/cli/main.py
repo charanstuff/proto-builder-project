@@ -138,7 +138,7 @@ def main():
     logging.info("Running proto builder...")
     # TODO: hacky way to get the project path
     # project_path = Path(__file__).parent.parent.parent
-    project_path = "/tmp/mar13" 
+    project_path = "/tmp/mar13-4pm" 
     print("project_path:", project_path)
     prompt_file = str(Path(project_path) / "prompt.txt")
     path = Path(project_path)
@@ -174,8 +174,8 @@ def main():
     )
 
     ai = AI(
-        model_name="gpt-4o-mini",
-        temperature=0.1
+        model_name="o3-mini"
+        # temperature=0.1
     )
     agent = CliAgent(
         memory,

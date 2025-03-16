@@ -362,6 +362,12 @@ class AI:
                 streaming=self.streaming,
                 max_tokens_to_sample=4096,
             )
+        elif "o3" in self.model_name: # doesn't have temperature parameter
+            return ChatOpenAI(
+                model=self.model_name,
+                streaming=self.streaming,
+                callbacks=[StreamingStdOutCallbackHandler()],
+            )
         elif self.vision:
             return ChatOpenAI(
                 model=self.model_name,

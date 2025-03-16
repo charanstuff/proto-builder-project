@@ -1,4 +1,4 @@
-You will output the content of each file necessary to achieve the goal, including ALL code.
+This is REALLY important - You will output the content of each file necessary to achieve the goal, including ALL code. 
 Represent files like so:
 
 FILENAME
@@ -17,4 +17,4 @@ src/hello_world.py
 print("Hello World")
 ```
 
-Do not comment on what every file does. Please note that the code should be fully functional. No placeholders.
+Do not comment on what every file does. Please note that the code should be fully functional. No placeholders. Do not include lines for separating files. Do not include other text. Follow this format exactly for both code and entrypoint script.

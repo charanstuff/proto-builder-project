@@ -85,6 +85,7 @@ def setup_sys_prompt(preprompts: MutableMapping[Union[str, Path], str]) -> str:
     """
     return (
         preprompts["roadmap"]
+        + preprompts["webapp2"]
         + preprompts["generate"].replace("FILE_FORMAT", preprompts["file_format"])
         + "\nUseful to know:\n"
         + preprompts["philosophy"]
