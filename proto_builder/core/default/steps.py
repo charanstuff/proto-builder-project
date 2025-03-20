@@ -190,6 +190,17 @@ def gen_entrypoint(
         step_name=curr_fn(),
     )
     print()
+    # Example of what chat should look like:
+    # ```bash
+    # # Install dependencies
+    # npm install
+    # 
+    # # Run the server
+    # npm run start &
+    # 
+    # # Run the client
+    # cd client && npm install && npm run dev
+    # ```
     chat = messages[-1].content.strip()
     regex = r"```\S*\n(.+?)```"
     matches = re.finditer(regex, chat, re.DOTALL)

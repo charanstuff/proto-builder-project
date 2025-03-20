@@ -117,7 +117,8 @@ class DockerManager:
         container_id = container.id
         for attempt in range(retries):
             # Split the command into a list of arguments
-            status, stdout, stderr = self.execute_local(["docker", "exec", container_id, "bash", "-c", "'curl -sSf http://localhost:8080'"])
+            status, stdout, stderr = self.execute_local(["docker", "exec", container_id, "bash", "-c", "curl -sSf http://localhost:8080"])
+            print(f"status: {status} stdout: {stdout} stderr: {stderr}")
             if status == 0:
                 return 0
             time.sleep(delay)

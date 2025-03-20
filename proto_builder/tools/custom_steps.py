@@ -1,22 +1,22 @@
-# from platform import platform
-# from sys import version_info
-# from typing import List, Union
+from platform import platform
+from sys import version_info
+from typing import List, Union
 
-# from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
-# from gpt_engineer.core.ai import AI
-# from gpt_engineer.core.base_execution_env import BaseExecutionEnv
-# from gpt_engineer.core.base_memory import BaseMemory
-# from gpt_engineer.core.chat_to_files import chat_to_files_dict
-# from gpt_engineer.core.default.paths import CODE_GEN_LOG_FILE, ENTRYPOINT_FILE
-# from gpt_engineer.core.default.steps import curr_fn, improve_fn, setup_sys_prompt
-# from gpt_engineer.core.files_dict import FilesDict
-# from gpt_engineer.core.preprompts_holder import PrepromptsHolder
-# from gpt_engineer.core.prompt import Prompt
+from proto_builder.core.ai import AI
+from proto_builder.core.base_execution_env import BaseExecutionEnv
+from proto_builder.core.base_memory import BaseMemory
+from proto_builder.core.chat_to_files import chat_to_files_dict
+from proto_builder.core.default.paths import CODE_GEN_LOG_FILE, ENTRYPOINT_FILE
+from proto_builder.core.default.steps import curr_fn, improve_fn, setup_sys_prompt
+from proto_builder.core.files_dict import FilesDict
+from proto_builder.core.preprompts_holder import PrepromptsHolder
+from proto_builder.core.prompt import Prompt
 
-# # Type hint for chat messages
-# Message = Union[AIMessage, HumanMessage, SystemMessage]
-# MAX_SELF_HEAL_ATTEMPTS = 10
+# Type hint for chat messages
+Message = Union[AIMessage, HumanMessage, SystemMessage]
+MAX_SELF_HEAL_ATTEMPTS = 10   
 
 
 # def get_platform_info() -> str:
@@ -37,86 +37,86 @@
 #     return a + b
 
 
-# def self_heal(
-#     ai: AI,
-#     execution_env: BaseExecutionEnv,
-#     files_dict: FilesDict,
-#     prompt: Prompt = None,
-#     preprompts_holder: PrepromptsHolder = None,
-#     memory: BaseMemory = None,
-#     diff_timeout=3,
-# ) -> FilesDict:
-#     """
-#     Attempts to execute the code from the entrypoint and if it fails, sends the error output back to the AI with instructions to fix.
+def self_heal(
+    ai: AI,
+    execution_env: BaseExecutionEnv,
+    files_dict: FilesDict,
+    prompt: Prompt = None,
+    preprompts_holder: PrepromptsHolder = None,
+    memory: BaseMemory = None,
+    diff_timeout=3,
+) -> FilesDict:
+    """
+    Attempts to execute the code from the entrypoint and if it fails, sends the error output back to the AI with instructions to fix.
 
-#     Parameters
-#     ----------
-#     ai : AI
-#         An instance of the AI model.
-#     execution_env : BaseExecutionEnv
-#         The execution environment where the code is run.
-#     files_dict : FilesDict
-#         A dictionary of file names to their contents.
-#     preprompts_holder : PrepromptsHolder, optional
-#         A holder for preprompt messages.
+    Parameters
+    ----------
+    ai : AI
+        An instance of the AI model.
+    execution_env : BaseExecutionEnv
+        The execution environment where the code is run.
+    files_dict : FilesDict
+        A dictionary of file names to their contents.
+    preprompts_holder : PrepromptsHolder, optional
+        A holder for preprompt messages.
 
-#     Returns
-#     -------
-#     FilesDict
-#         The updated files dictionary after self-healing attempts.
+    Returns
+    -------
+    FilesDict
+        The updated files dictionary after self-healing attempts.
 
-#     Raises
-#     ------
-#     FileNotFoundError
-#         If the required entrypoint file does not exist in the code.
-#     AssertionError
-#         If the preprompts_holder is None.
+    Raises
+    ------
+    FileNotFoundError
+        If the required entrypoint file does not exist in the code.
+    AssertionError
+        If the preprompts_holder is None.
 
-#     Notes
-#     -----
-#     This code will make `MAX_SELF_HEAL_ATTEMPTS` to try and fix the code
-#     before giving up.
-#     This makes the assuption that the previous step was `gen_entrypoint`,
-#     this code could work with `simple_gen`, or `gen_clarified_code` as well.
-#     """
+    Notes
+    -----
+    This code will make `MAX_SELF_HEAL_ATTEMPTS` to try and fix the code
+    before giving up.
+    This makes the assuption that the previous step was `gen_entrypoint`,
+    this code could work with `simple_gen`, or `gen_clarified_code` as well.
+    """
 
-#     # step 1. execute the entrypoint
-#     # log_path = dbs.workspace.path / "log.txt"
-#     if ENTRYPOINT_FILE not in files_dict:
-#         raise FileNotFoundError(
-#             "The required entrypoint "
-#             + ENTRYPOINT_FILE
-#             + " does not exist in the code."
-#         )
+    # step 1. execute the entrypoint
+    # log_path = dbs.workspace.path / "log.txt"
+    if ENTRYPOINT_FILE not in files_dict:
+        raise FileNotFoundError(
+            "The required entrypoint "
+            + ENTRYPOINT_FILE
+            + " does not exist in the code."
+        )
 
-#     attempts = 0
-#     if preprompts_holder is None:
-#         raise AssertionError("Prepromptsholder required for self-heal")
-#     while attempts < MAX_SELF_HEAL_ATTEMPTS:
-#         attempts += 1
-#         timed_out = False
+    attempts = 0
+    if preprompts_holder is None:
+        raise AssertionError("Prepromptsholder required for self-heal")
+    while attempts < MAX_SELF_HEAL_ATTEMPTS:
+        attempts += 1
+        timed_out = False
 
-#         # Start the process
-#         execution_env.upload(files_dict)
-#         p = execution_env.popen(files_dict[ENTRYPOINT_FILE])
+        # Start the process
+        execution_env.upload(files_dict)
+        p = execution_env.popen(files_dict[ENTRYPOINT_FILE]) # TODO: CHANGE THIS TO RUN ENTRYPOINT IN ENVIRONMENT
 
-#         # Wait for the process to complete and get output
-#         stdout_full, stderr_full = p.communicate()
+        # Wait for the process to complete and get output
+        stdout_full, stderr_full = p.communicate()
 
-#         if (p.returncode != 0 and p.returncode != 2) and not timed_out:
-#             print("run.sh failed.  The log is:")
-#             print(stdout_full.decode("utf-8"))
-#             print(stderr_full.decode("utf-8"))
+        if (p.returncode != 0 and p.returncode != 2) and not timed_out:
+            print("run.sh failed.  The log is:")
+            print(stdout_full.decode("utf-8"))
+            print(stderr_full.decode("utf-8"))
 
-#             new_prompt = Prompt(
-#                 f"A program with this specification was requested:\n{prompt}\n, but running it produced the following output:\n{stdout_full}\n and the following errors:\n{stderr_full}. Please change it so that it fulfills the requirements."
-#             )
-#             files_dict = improve_fn(
-#                 ai, new_prompt, files_dict, memory, preprompts_holder, diff_timeout
-#             )
-#         else:
-#             break
-#     return files_dict
+            new_prompt = Prompt(
+                f"A program with this specification was requested:\n{prompt}\n, but running it produced the following output:\n{stdout_full}\n and the following errors:\n{stderr_full}. Please change it so that it fulfills the requirements."
+            )
+            files_dict = improve_fn(
+                ai, new_prompt, files_dict, memory, preprompts_holder, diff_timeout
+            )
+        else:
+            break
+    return files_dict
 
 
 # def clarified_gen(

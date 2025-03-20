@@ -59,27 +59,68 @@ class DockerExecutionEnv(BaseExecutionEnv):
         logger.info("stdout: %s", stdout)
         return status, stdout, "stderr not implemented"
 
+    # def popen(self, command: str) -> subprocess.Popen:
+        # """
+        # Runs the command in a Docker container using subprocess.Popen.
+        # This minimal implementation uses docker run with --rm and mounted volumes.
+        # Note: It does not perform code retrieval or image building.
+        # """
+        # import subprocess
+        # docker_cmd = ["docker", "run", "--rm"]
+        # volumes = {
+        #     os.path.abspath(self.files.working_dir): {
+        #         'bind': self.workdir,
+        #         'mode': 'rw'
+        #     }
+        # }
+        # for host_dir, binding in volumes.items():
+        #     container_bind = binding.get("bind", self.workdir)
+        #     mode = binding.get("mode", "rw")
+        #     docker_cmd.extend(["-v", f"{host_dir}:{container_bind}:{mode}"])
+        # docker_cmd.extend([self.language if self.language else "react-python:latest", "sh", "-c", command])
+        # logger.debug("Popen docker command: %s", docker_cmd)
+        # return subprocess.Popen(docker_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     def popen(self, command: str) -> subprocess.Popen:
         """
         Runs the command in a Docker container using subprocess.Popen.
-        This minimal implementation uses docker run with --rm and mounted volumes.
-        Note: It does not perform code retrieval or image building.
+        Ensures code is copied to container before executing the command.
+        
+        Parameters
+        ----------
+        command : str
+            The command to run inside the container
+            
+        Returns
+        -------
+        subprocess.Popen
+            A process object connected to the command running in the container
         """
-        import subprocess
-        docker_cmd = ["docker", "run", "--rm"]
-        volumes = {
-            os.path.abspath(self.files.working_dir): {
-                'bind': self.workdir,
-                'mode': 'rw'
-            }
-        }
-        for host_dir, binding in volumes.items():
-            container_bind = binding.get("bind", self.workdir)
-            mode = binding.get("mode", "rw")
-            docker_cmd.extend(["-v", f"{host_dir}:{container_bind}:{mode}"])
-        docker_cmd.extend([self.language if self.language else "react-python:latest", "sh", "-c", command])
+        # First ensure code is copied to container
+        if not self.files.is_empty():
+            logger.info("Copying code to container...")
+            self.docker_manager.copy_code_to_container(
+                self.container, 
+                str(self.files.working_dir), 
+                self.workdir
+            )
+            logger.info("Code copied to container")
+        
+        docker_cmd = [
+            "docker", 
+            "exec",
+            "-w", self.workdir,  # Set working directory in container
+            self.container,      # Use existing container
+            "sh", "-c",         # Run command through shell
+            command
+        ]
+        
         logger.debug("Popen docker command: %s", docker_cmd)
-        return subprocess.Popen(docker_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return subprocess.Popen(
+            docker_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
 
 
 
